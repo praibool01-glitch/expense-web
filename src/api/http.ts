@@ -70,6 +70,10 @@ type LoginResult = {
 export const devLogin = (lineUserId: string, displayName?: string) =>
   request<LoginResult>('POST', '/auth/dev', { lineUserId, displayName }, false);
 
+// ล็อกอินจริง: ส่ง LINE ID token (จาก LIFF) ให้ backend verify แล้วแลกเป็น session token
+export const lineLogin = (idToken: string) =>
+  request<LoginResult>('POST', '/auth/line', { idToken }, false);
+
 // ---------- ข้อมูล ----------
 export const getCategories = () => request<Category[]>('GET', '/categories');
 
