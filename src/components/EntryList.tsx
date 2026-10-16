@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { CSSProperties } from 'react';
 import type { Category, Entry } from '../types';
 import { formatBaht } from '../lib/money';
+import { formatDateTime } from '../lib/date-time';
 
 type Handlers = {
   onTogglePaid: (id: string, isPaid: boolean) => void;
@@ -68,6 +69,9 @@ function Group({ entry, colorOf, onTogglePaid, onEdit, onAddChild }: GroupProps)
                 ? 'ยังไม่มีรายการย่อย'
                 : `จ่ายแล้ว ${paidCount} จาก ${kids.length} รายการ`}
             </span>
+            <time className="timestamp" dateTime={entry.createdAt}>
+              {formatDateTime(entry.createdAt)}
+            </time>
           </span>
           <span className="amount">{formatBaht(entry.totalSatang)}</span>
         </button>
@@ -123,6 +127,9 @@ function Leaf({ entry, color, onTogglePaid, onEdit }: LeafProps) {
       <span className="name">
         {entry.name}
         {entry.note && <span className="note">{entry.note}</span>}
+        <time className="timestamp" dateTime={entry.createdAt}>
+          {formatDateTime(entry.createdAt)}
+        </time>
       </span>
       <span className="amount">{formatBaht(entry.totalSatang)}</span>
       <button

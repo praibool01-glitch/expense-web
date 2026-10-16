@@ -1,5 +1,6 @@
 import type { Income } from '../types';
 import { formatBaht } from '../lib/money';
+import { formatDateTime } from '../lib/date-time';
 
 type Props = {
   incomes: Income[];
@@ -26,7 +27,12 @@ export function IncomeList({ incomes, onAdd, onEdit }: Props) {
           {incomes.map((i) => (
             <li key={i.id} className="entry">
               <div className="income-row">
-                <span className="name">{i.name}</span>
+                <span className="name">
+                  {i.name}
+                  <time className="timestamp" dateTime={i.createdAt ?? undefined}>
+                    {formatDateTime(i.createdAt)}
+                  </time>
+                </span>
                 <span className="amount">{formatBaht(i.amountSatang)}</span>
                 <button
                   type="button"

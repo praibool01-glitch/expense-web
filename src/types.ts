@@ -13,6 +13,7 @@ export type Entry = {
   isPaid: boolean;
   createdBy: string | null;
   sortOrder: number;
+  createdAt: string;
   children?: Entry[];
 };
 
@@ -21,6 +22,7 @@ export type Income = {
   name: string;
   amountSatang: number;
   createdBy: string | null;
+  createdAt: string | null;
 };
 
 export type MonthSummary = {
