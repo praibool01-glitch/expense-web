@@ -72,7 +72,9 @@ const incomes: (Income & { month: string })[] = [
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const byNewest = (a: Row, b: Row) =>
-  b.createdAt.localeCompare(a.createdAt) || b.sortOrder - a.sortOrder;
+  Number(a.amountSatang !== null) - Number(b.amountSatang !== null) ||
+  b.createdAt.localeCompare(a.createdAt) ||
+  b.sortOrder - a.sortOrder;
 
 export async function getCategories(): Promise<Category[]> {
   await sleep(150);
