@@ -71,7 +71,8 @@ const incomes: (Income & { month: string })[] = [
 ];
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
-const bySort = (a: Row, b: Row) => a.sortOrder - b.sortOrder;
+const byNewest = (a: Row, b: Row) =>
+  b.createdAt.localeCompare(a.createdAt) || b.sortOrder - a.sortOrder;
 
 export async function getCategories(): Promise<Category[]> {
   await sleep(150);
@@ -84,7 +85,7 @@ export async function getMonth(month: string): Promise<MonthResponse> {
   const byId = new Map(monthRows.map((r) => [r.id, r]));
 
   const toEntry = (r: Row): Entry => {
-    const kids = monthRows.filter((c) => c.parentId === r.id).sort(bySort).map(toEntry);
+    const kids = monthRows.filter((c) => c.parentId === r.id).sort(byNewest).map(toEntry);
     const total = kids.length
       ? kids.reduce((sum, k) => sum + k.totalSatang, 0)
       : (r.amountSatang ?? 0);
@@ -93,7 +94,7 @@ export async function getMonth(month: string): Promise<MonthResponse> {
 
   const entries = monthRows
     .filter((r) => r.parentId === null)
-    .sort(bySort)
+    .sort(byNewest)
     .map(toEntry);
 
   // สรุปตามหมวด: นับเฉพาะแถวที่มียอด และใช้หมวดของแม่ถ้าลูกไม่มีหมวด
