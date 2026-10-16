@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import type { Category, Entry } from '../types';
 import { parseBaht, toBahtInput } from '../lib/money';
+import { getFrequentEntries, rememberFrequentEntry } from '../lib/frequent-entries';
 import { ApiError } from '../api/http';
 import { useDeleteEntry, useSaveEntry } from '../hooks/useMonth';
 
@@ -11,13 +12,23 @@ type Props = {
   defaultParentId: string | null;
   entries: Entry[]; // ใช้สร้างตัวเลือก "กลุ่ม"
   categories: Category[];
+  householdId: string | null;
   onClose: () => void;
 };
 
 type Errors = { name?: string; amount?: string };
 
-export function EntryForm({ month, entry, defaultParentId, entries, categories, onClose }: Props) {
+export function EntryForm({
+  month,
+  entry,
+  defaultParentId,
+  entries,
+  categories,
+  householdId,
+  onClose,
+}: Props) {
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const amountRef = useRef<HTMLInputElement>(null);
   const save = useSaveEntry(month);
   const remove = useDeleteEntry(month);
   const isEdit = entry !== null;
@@ -33,6 +44,7 @@ export function EntryForm({ month, entry, defaultParentId, entries, categories, 
   const [categoryId, setCategoryId] = useState(entry?.categoryId ?? '');
   const [parentId, setParentId] = useState(entry?.parentId ?? defaultParentId ?? '');
   const [note, setNote] = useState(entry?.note ?? '');
+  const [frequentEntries] = useState(() => getFrequentEntries(householdId));
   const [errors, setErrors] = useState<Errors>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
 
@@ -50,6 +62,16 @@ export function EntryForm({ month, entry, defaultParentId, entries, categories, 
     onError: (err: Error) =>
       setSubmitError(err instanceof ApiError ? err.message : 'บันทึกไม่สำเร็จ ลองอีกครั้ง'),
   };
+
+  function selectFrequentEntry(frequentEntry: (typeof frequentEntries)[number]) {
+    setName(frequentEntry.name);
+    setCategoryId(
+      categories.find((category) => category.name === frequentEntry.categoryName)?.id ?? '',
+    );
+    setErrors({});
+    setSubmitError(null);
+    amountRef.current?.focus();
+  }
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -77,8 +99,32 @@ export function EntryForm({ month, entry, defaultParentId, entries, categories, 
       parentId: kind === 'item' ? parentId || null : null,
     };
 
-    if (entry) save.mutate({ id: entry.id, patch: fields }, done);
-    else save.mutate({ id: null, input: { month, ...fields } }, done);
+    if (entry) {
+      save.mutate({ id: entry.id, patch: fields }, done);
+    } else {
+      const categoryName =
+        categories.find((category) => category.id === categoryId)?.name ??
+        (parentId
+          ? categories.find(
+              (category) => category.id === entries.find((group) => group.id === parentId)?.categoryId,
+            )?.name
+          : null) ??
+        null;
+      save.mutate(
+        { id: null, input: { month, ...fields } },
+        kind === 'item'
+          ? {
+              ...done,
+              onSuccess: () => {
+                if (householdId !== null) {
+                  rememberFrequentEntry(trimmed, categoryName, householdId);
+                }
+                onClose();
+              },
+            }
+          : done,
+      );
+    }
   }
 
   function handleDelete() {
@@ -120,6 +166,24 @@ export function EntryForm({ month, entry, defaultParentId, entries, categories, 
           </fieldset>
         )}
 
+        {!isEdit && kind === 'item' && frequentEntries.length > 0 && (
+          <div className="field frequent-entry-field">
+            <span className="frequent-entry-label">รายการที่ใช้บ่อย</span>
+            <div className="frequent-entry-list">
+              {frequentEntries.slice(0, 8).map((frequentEntry) => (
+                <button
+                  key={frequentEntry.name}
+                  type="button"
+                  className="frequent-entry"
+                  onClick={() => selectFrequentEntry(frequentEntry)}
+                >
+                  {frequentEntry.name}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div className="field">
           <label htmlFor="f-name">ชื่อ</label>
           <input
@@ -141,6 +205,7 @@ export function EntryForm({ month, entry, defaultParentId, entries, categories, 
             <label htmlFor="f-amount">จำนวนเงิน (บาท)</label>
             <input
               id="f-amount"
+              ref={amountRef}
               inputMode="decimal"
               placeholder="0.00"
               value={amount}

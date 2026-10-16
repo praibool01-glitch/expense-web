@@ -84,12 +84,13 @@ export default function App() {
           {entryForm && (
             <EntryForm
               // key ต่างกัน = React สร้างฟอร์มใหม่ ค่าในช่องจึงรีเซ็ตทุกครั้งที่เปิด
-              key={entryForm.entry?.id ?? `new-${entryForm.parentId ?? ''}`}
+              key={`${household?.id ?? 'loading'}-${entryForm.entry?.id ?? `new-${entryForm.parentId ?? ''}`}`}
               month={month}
               entry={entryForm.entry}
               defaultParentId={entryForm.parentId}
               entries={data.entries}
               categories={categories}
+              householdId={household?.id ?? null}
               onClose={() => setEntryForm(null)}
             />
           )}
