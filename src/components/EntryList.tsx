@@ -11,25 +11,25 @@ type Handlers = {
 };
 type ColorOf = (categoryId: string | null) => string;
 
-type Props = Handlers & { entries: Entry[]; categories: Category[] };
+type Props = Handlers & { entries: Entry[]; categories: Category[]; isFiltered?: boolean };
 
-export function EntryList({ entries, categories, ...handlers }: Props) {
+export function EntryList({ entries, categories, isFiltered = false, ...handlers }: Props) {
   const catById = new Map(categories.map((c) => [c.id, c]));
   const colorOf: ColorOf = (id) => (id ? catById.get(id)?.color : undefined) ?? '#9AA5A1';
 
   return (
     <ul className="entries">
       {entries.map((e) => (
-        <Group key={e.id} entry={e} colorOf={colorOf} {...handlers} />
+        <Group key={e.id} entry={e} colorOf={colorOf} isFiltered={isFiltered} {...handlers} />
       ))}
     </ul>
   );
 }
 
-type GroupProps = Handlers & { entry: Entry; colorOf: ColorOf };
+type GroupProps = Handlers & { entry: Entry; colorOf: ColorOf; isFiltered: boolean };
 
 // แถวระดับบนสุด: แถวที่ไม่มียอด (amountSatang เป็น null) คือ "กลุ่ม" กดขยายดูรายการย่อยได้
-function Group({ entry, colorOf, onTogglePaid, onEdit, onAddChild }: GroupProps) {
+function Group({ entry, colorOf, onTogglePaid, onEdit, onAddChild, isFiltered }: GroupProps) {
   const [open, setOpen] = useState(false);
 
   if (entry.amountSatang !== null) {
@@ -66,14 +66,17 @@ function Group({ entry, colorOf, onTogglePaid, onEdit, onAddChild }: GroupProps)
             {entry.name}
             <span className="note">
               {kids.length === 0
-                ? 'ยังไม่มีรายการย่อย'
+                ? isFiltered
+                  ? 'ไม่มีรายการย่อยที่ตรงกับตัวกรอง'
+                  : 'ยังไม่มีรายการย่อย'
                 : `จ่ายแล้ว ${paidCount} จาก ${kids.length} รายการ`}
             </span>
             <time className="timestamp" dateTime={entry.createdAt}>
               {formatDateTime(entry.createdAt)}
             </time>
+            <span className="timestamp">บันทึกโดย {entry.createdByName ?? 'ไม่ทราบชื่อ'}</span>
           </span>
-          <span className="amount">{formatBaht(entry.totalSatang)}</span>
+          {!isFiltered && <span className="amount">{formatBaht(entry.totalSatang)}</span>}
         </button>
         <button
           type="button"
@@ -130,6 +133,7 @@ function Leaf({ entry, color, onTogglePaid, onEdit }: LeafProps) {
         <time className="timestamp" dateTime={entry.createdAt}>
           {formatDateTime(entry.createdAt)}
         </time>
+        <span className="timestamp">บันทึกโดย {entry.createdByName ?? 'ไม่ทราบชื่อ'}</span>
       </span>
       <span className="amount">{formatBaht(entry.totalSatang)}</span>
       <button

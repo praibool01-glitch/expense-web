@@ -4,11 +4,12 @@ import { formatDateTime } from '../lib/date-time';
 
 type Props = {
   incomes: Income[];
+  isFiltered?: boolean;
   onAdd: () => void;
   onEdit: (income: Income) => void;
 };
 
-export function IncomeList({ incomes, onAdd, onEdit }: Props) {
+export function IncomeList({ incomes, isFiltered = false, onAdd, onEdit }: Props) {
   return (
     <section aria-labelledby="income-title">
       <div className="section-head">
@@ -21,7 +22,9 @@ export function IncomeList({ incomes, onAdd, onEdit }: Props) {
       </div>
 
       {incomes.length === 0 ? (
-        <p className="status">ยังไม่มีรายรับในเดือนนี้</p>
+        <p className="status">
+          {isFiltered ? 'ไม่พบรายการรายรับของผู้บันทึกนี้' : 'ยังไม่มีรายรับในเดือนนี้'}
+        </p>
       ) : (
         <ul className="entries">
           {incomes.map((i) => (
@@ -32,6 +35,7 @@ export function IncomeList({ incomes, onAdd, onEdit }: Props) {
                   <time className="timestamp" dateTime={i.createdAt ?? undefined}>
                     {formatDateTime(i.createdAt)}
                   </time>
+                  <span className="timestamp">บันทึกโดย {i.createdByName ?? 'ไม่ทราบชื่อ'}</span>
                 </span>
                 <span className="amount">{formatBaht(i.amountSatang)}</span>
                 <button

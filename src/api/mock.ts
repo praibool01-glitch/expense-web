@@ -37,7 +37,8 @@ const row = (o: Partial<Row> & Pick<Row, 'name'>): Row => {
     categoryId: null,
     note: null,
     isPaid: false,
-    createdBy: null,
+    createdBy: 'u1',
+    createdByName: 'คุณ',
     sortOrder: seq,
     createdAt: new Date().toISOString(),
     ...o,
@@ -65,7 +66,8 @@ const incomes: (Income & { month: string })[] = [
     month: MONTH,
     name: 'เงินเดือน',
     amountSatang: 7791100,
-    createdBy: null,
+    createdBy: 'u1',
+    createdByName: 'คุณ',
     createdAt: new Date().toISOString(),
   },
 ];
@@ -120,11 +122,12 @@ export async function getMonth(month: string): Promise<MonthResponse> {
   return {
     month,
     entries,
-    incomes: monthIncomes.map(({ id, name, amountSatang, createdBy, createdAt }) => ({
+    incomes: monthIncomes.map(({ id, name, amountSatang, createdBy, createdByName, createdAt }) => ({
       id,
       name,
       amountSatang,
       createdBy,
+      createdByName,
       createdAt,
     })),
     summary: {
@@ -189,7 +192,8 @@ export async function createIncome(input: IncomeInput): Promise<void> {
     month: input.month,
     name: input.name.trim(),
     amountSatang: input.amountSatang,
-    createdBy: null,
+    createdBy: 'u1',
+    createdByName: 'คุณ',
     createdAt: new Date().toISOString(),
   });
 }

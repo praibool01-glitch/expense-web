@@ -12,6 +12,7 @@ export type Entry = {
   note: string | null;
   isPaid: boolean;
   createdBy: string | null;
+  createdByName: string | null;
   sortOrder: number;
   createdAt: string;
   children?: Entry[];
@@ -22,6 +23,7 @@ export type Income = {
   name: string;
   amountSatang: number;
   createdBy: string | null;
+  createdByName: string | null;
   createdAt: string | null;
 };
 
